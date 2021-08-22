@@ -15091,6 +15091,10 @@ Sources:
     - CellLocation: D3
       Type: Cell
       Value: =D2+1+SUM(B4:B6)
+    # TODO Here is the big test!
+    - CellLocation: D10
+      Type: DynamicCell
+      Dependencies: "../example_src.py"
     Type: Sheet
     Value: numbers
   Path: ../thingy2.xlsx

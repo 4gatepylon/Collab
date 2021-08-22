@@ -1,15 +1,15 @@
 import re
-import openpyxl
-from enum import Enum
 import yaml
+import uuid
+import subprocess
+from subprocess import Popen, PIPE
 from enum import Enum
+from glob import glob
+
+import openpyxl
 from openpyxl import load_workbook
 from openpyxl import Workbook
 from openpyxl.utils import FORMULAE
-
-import subprocess
-from subprocess import Popen, PIPE
-from glob import glob
 
 # Helpful for debugging
 import pprint as _pp
@@ -178,8 +178,8 @@ def deserialize(yaml_path="master.yaml", TESTONLY=False):
                      _ = ws.cell(column=column, row=row, value=y_dep[__VAL])
                   ############################################################## Dynamic Deserialization
                   elif subt == __DYNAMIC:
-                     if not __VAL is None:
-                        raise Exception("Non-null values not supported for dynamic types: ", __VAL)
+                     if __VAL in y_dep and not y_dep[__VAL] is None:
+                        raise Exception("Non-null values not supported for dynamic types (no caching): ", __VAL)
                      file2output = y_dep[__DEPS]
                      # Here is the gimmick we expect
                      folder, pyfile = file2output.rsplit("/", 1)
@@ -187,15 +187,15 @@ def deserialize(yaml_path="master.yaml", TESTONLY=False):
                      nohit = "check_" + str(uuid.uuid4()).replace("-", "_")
                      # Check that it is a valid value to insert into a cell (bool not supported since)
                      # you can create it by passing, say, a positive vs. negative number with an if statement
-                     nohit_check = "type(nohit) == str or type(nohit) == int or type(nohit) == float"
+                     nohit_check = "type(" + nohit + ") == str or type(" + nohit + ") == int or type(" + nohit + ") == float"
                      # Print nohit to standard out so we can catch with subprocess or error out
-                     print2stdout = "print(nohit if " + nohit_check + " else raise Exception(\"Bad Value\"), end=\"\")"
+                     print2stdout = "print(" + nohit + " if " + nohit_check + " else int(None), end=\"\")"
                      cmd = [
                         # Invoke python and run it inline
                         "python3",
                         "-c",
                         # import the file, expecting there to be a main (otherwise it will fail)
-                        "from " + pyfile + " import main; " + nohit + " = main(); " + print2stdout,
+                        "from " + pyfile[:-3] + " import main; " + nohit + " = main(); " + print2stdout,
                      ]
                      # This can raise a TimeoutExpired `https://docs.python.org/3/library/subprocess.html#subprocess.Popen.communicate`
                      outs, errs = Popen(cmd, stdout=PIPE, stderr=PIPE, cwd=folder).communicate(timeout=PROC_TIMEOUT)
@@ -213,7 +213,7 @@ def deserialize(yaml_path="master.yaml", TESTONLY=False):
                            raise Exception("Failed to initialize output from stdout")
                         _ = ws.cell(column=column, row=row, value=out)
                      else:
-                        raise Exception("Failure running subprocess " + file2output + " with error `" + str(errs) + "`")
+                        raise Exception("Failure running subprocess for " + file2output + " with error `" + str(errs) + "`")
                   ############################################################## END (Dynamic Deserialization)
             else:
                raise Exception("Top level entities MUST be sheet, but found type " + t)
@@ -230,41 +230,11 @@ def deserialize(yaml_path="master.yaml", TESTONLY=False):
          p = y_source[__PATH] if __PATH in y_source else "UnknownPath"
          raise Exception("Trying to deserialize with unknown file type: " + p)
       # Ignore python files
-   
 
-########################################################### Serialization (old and deprecated)
-class EntityType(Enum):
-   EXCEL = 1
-   CELL = 2
-   FUNCTION = 3
-   PLOT = 4
-
-def serialize_excel_yaml(filename):
-# load excel with its path
-   try:
-      wrkbk = openpyxl.load_workbook(filename)
-   except:
-      return ValueError(f'{filename} is not a valid path to an excel file')
-   
-   sheet = wrkbk.active
-   entities = []
-   yaml_obj = {'Source': {'Type': 'EXCEL', 'Path': filename, 'Entities': entities}}
-
-   # iterate through excel and display data
-   for row in range(1, sheet.max_row+1):         
-      for col in range(1, sheet.max_column+1):
-         col_letter = number2letters(col)
-         cell_obj = sheet.cell(row=row, column=col)
-         entity = {'Entity': {'type': 'cell', 'value': cell_obj.value, 'location': f'{col_letter}{row}'}}
-         entities.append(entity)
-         # print(cell_obj.value, end=" ")
-
-   with open(f'{filename}.yaml', 'w') as file:
-      yaml.dump(yaml_obj, file)
 
 if __name__ == "__main__":
    # These go through master.yaml
-   d = serialize()
+   # d = serialize()
    deserialize(TESTONLY=True)
    # pprint(d)
    # print("Serializing into test_output.yaml")

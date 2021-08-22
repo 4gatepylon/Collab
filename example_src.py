@@ -5,6 +5,6 @@ def fib(n):
     else:
         return fib(n-1) + fib(n-2)
 
+# expect 2
 def main():
-    return fib(2)
-print(main(), end="")
+    return fib(3)
