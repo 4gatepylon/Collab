@@ -36,12 +36,14 @@ __TYPE = "Type"
 __PATH = "Path"
 __NAME = "Name"         # Optional
 __ENTITIES = "Entities" # Optional
+_ID = "Id"
 # __NAME                # Optional
 __LOC = "CellLocation"  # Optional
 __CACHE = "CachedVal"   # Optional
 __VAL = "FuncVal"       # Optional
 __GROUPS = "Groups"     # Optional
 __META = "Metadata"     # Optional
+__CHILDREN = "Children"
 
 # Source Type
 __PYTHON_STDOUT_FILE = "PYTHON_STDOUT_FILE"
@@ -74,6 +76,8 @@ class Entity():
         raise NotImplementedError
     
     # These two functions are expected to be present in all entities
+    def Id(self):
+        return NotImplementedError
     def Children(self):
         raise NotImplementedError
     def Type(self):
@@ -82,8 +86,16 @@ class Entity():
         return False
 
 class Excel(Entity):
-    # TODO FromYamlMap
-    # TODO ToYamlMap
+    @staticmethod
+    def ToYamlMap():
+        y = {}
+        for child in self.children:
+
+        pass # TODO
+
+    @staticmethod
+    def FromYamlMap():
+        pass # TODO
 
     @staticmethod
     def ToExcelFile(filepath):
@@ -105,7 +117,6 @@ class Excel(Entity):
             child.AddToWorkbook(workbook)
 
 class Sheet(Entity):
-    # TODO
     pass # all the sheets in the excel
 
 # A value should be something that can be read as the input to a function
@@ -304,7 +315,6 @@ def Yaml(filepath):
 
 class Source():
     def __init__(self, path, _type, entities=None, name=None):
-        self.id = _id
         self.path = path
         self.type = _type
         self.entities = entities
