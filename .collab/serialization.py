@@ -114,7 +114,7 @@ def serialize_to_mp(filenames=None):
    serialized[__SOURCES] = sources
    # Python files must be done first to get the callnames in there
    for filename in sorted(filenames, key=lambda fn: 0 if ".py" in fn else 1):
-      print("Serializing file " + filename)
+      # print("Serializing file " + filename)
       matches_py = py_re.match(filename)
       matches_excel = excel_re.match(filename)
       if not matches_py and not matches_excel:
@@ -252,7 +252,7 @@ def serialize_entities(entities, wb, cn2f):
                   # print("hi")
                   if cn in cn2f:
                      # print("byte")
-                     print("Calculating dynamic cell " + cell.coordinate + " with val " + str(cell.value))
+                     # print("Calculating dynamic cell " + cell.coordinate + " with val " + str(cell.value))
                      deps.append({
                         __TYPE: __DYNAMIC,
                         __LOC: cell.coordinate,

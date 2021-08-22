@@ -29,16 +29,29 @@ Sources:
     - CellLocation: D6
       Type: Cell
       Value: 6
+    - CellLocation: D10
+      Type: Cell
+      Value: google.com
+    - CellLocation: D11
+      Type: Cell
+      Value: reddit.com
+    - CellLocation: D12
+      Type: Cell
+      Value: yahoo.com
+    - CellLocation: D13
+      Type: Cell
+      Value: localhost
     - CellLocation: D16
       Dependencies:
         CellSources:
         - - D10
-        - - D11
-        - - D12
         - - D13
         String: fib(D10:D13)
       Type: DynamicCell
       Value: ../example_src.py
+    - CellLocation: D19
+      Type: Cell
+      Value: 3
     - CellLocation: F1
       Dependencies:
         CellSources:
@@ -51,12 +64,16 @@ Sources:
         CellSources:
         - - D1
         - - D2
+        - - D3
+        - - D4
+        - - D5
         - - D6
-        - - D21
+        - - D7
+        - - D8
         String: fib(D1:D6)
       Type: DynamicCell
       Value: ../example_src.py
-    - CellLocation: J1
+    - CellLocation: I1
       Dependencies:
         CellSources:
         - null
