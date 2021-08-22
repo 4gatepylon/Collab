@@ -88,13 +88,25 @@ def get_call_name(filepath):
          return None
       return c
 
-# Turn Excel into Yaml
 def serialize(filenames=None, yaml_path="master.yaml", TESTONLY=False, verbose=False):
-   cn2f = {}
-
    TESTONLY_PREPEND = ""
    if TESTONLY:
       TESTONLY_PREPEND = "TEST_"
+   m = serialize_to_mp(filenames=filenames)
+   if verbose:
+      pprint(m)
+   try:
+      yp, yfp = yaml_path.rsplit("/", 1)
+      yp = yp + "/"
+   except ValueError:
+      yp = ""
+      yfp = yaml_path
+   with open(yp + TESTONLY_PREPEND + yfp, "w") as yf:
+      yaml.dump(m, yf)
+
+# Turn Excel into Yaml
+def serialize_to_mp(filenames=None):
+   cn2f = {}
    if filenames is None:
       filenames = glob("../*.py") + glob("../*.xlsx")
    serialized = {}
@@ -102,7 +114,7 @@ def serialize(filenames=None, yaml_path="master.yaml", TESTONLY=False, verbose=F
    serialized[__SOURCES] = sources
    # Python files must be done first to get the callnames in there
    for filename in sorted(filenames, key=lambda fn: 0 if ".py" in fn else 1):
-      print("Serializing file " + filename)
+      # print("Serializing file " + filename)
       matches_py = py_re.match(filename)
       matches_excel = excel_re.match(filename)
       if not matches_py and not matches_excel:
@@ -127,16 +139,7 @@ def serialize(filenames=None, yaml_path="master.yaml", TESTONLY=False, verbose=F
             source[__CALL_NAME] = call_name
             cn2f[call_name] = filename
       sources.append(source)
-   try:
-      yp, yfp = yaml_path.rsplit("/", 1)
-      yp = yp + "/"
-   except ValueError:
-      yp = ""
-      yfp = yaml_path
-   with open(yp + TESTONLY_PREPEND + yfp, "w") as yf:
-      yaml.dump(serialized, yf)
-   if verbose:
-      pprint(serialized)
+   return serialized
 
 # This will get the arguments of a cell value 
 def parse_cn_deps(full_cell_value):
@@ -249,7 +252,7 @@ def serialize_entities(entities, wb, cn2f):
                   # print("hi")
                   if cn in cn2f:
                      # print("byte")
-                     print("Calculating dynamic cell " + cell.coordinate + " with val " + str(cell.value))
+                     # print("Calculating dynamic cell " + cell.coordinate + " with val " + str(cell.value))
                      deps.append({
                         __TYPE: __DYNAMIC,
                         __LOC: cell.coordinate,
