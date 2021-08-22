@@ -1,0 +1,10 @@
+Sources:
+   -Source
+      Path: 'path'
+      Type: 'EXCEL'
+      Entities:
+         -Entity
+            Type: 'CELL'
+            FuncVal: ''
+            CachedVal: 'Value'
+            Location: 'A1'
