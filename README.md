@@ -1,6 +1,12 @@
 # TODO
-1. Get the CLI commands (particularly diff) to properly work with the hidden folder
-2. Ignore the hidden files with `https://stackoverflow.com/questions/10415100/want-to-exclude-file-from-git-diff`
+1. Get the CLI commands (particularly diff) to properly work with the hidden folder properly. Nicely encapsulate git so that we have some sort of onboarding flow where you run a script to set up your `.collab` and link to a git repository somewhere and then start editing excel spreadsheets.
+2. Do a smart diff that is basically only non-hidden python files and some sort of tree object, maybe like a pydot or something in electron. Ignore the hidden files with `https://stackoverflow.com/questions/10415100/want-to-exclude-file-from-git-diff`.
+
+# Top Existing Demoable Features
+1. Function injection with callable name
+2. Function injection with arguments, arguments that are ranges and range merging (multiple ranges)
+3. Basic GUI to do "commits" and other version control functionality
+4. Basic unit testing demo
 
 # Collab
 Excel + Git + Jupyter Notebook with Smart Diffing

@@ -18,7 +18,7 @@ def pprint(string):
     pp.pprint(string)
 
 # Any process you call in your build cannot take longer than 5 seconds to run
-PROC_TIMEOUT = 5
+PROC_TIMEOUT = 30
 
 # Yaml Structure is
 # A list of sources with a type, path, and entities (if it's an excel file)
@@ -221,7 +221,7 @@ def is_eq(v):
 def calc_cell_values(cell_srcs, cell2val):
    vals = []
    for cell_coord in cell_srcs:
-      pprint(cell2val)
+      # pprint(cell2val)
       v = fetch_or_fail(cell2val, cell_coord)
       if is_eq(v):
          raise Exception("We do not allow reference to non-static cells from python scripts yet")
@@ -372,7 +372,7 @@ def deserialize(yaml_path="master.yaml", TESTONLY=False):
                            # those quotation marks will turn int \"x\" which is what we want to plase INSIDE
                            # the actual main_params value for that string because we want to keep the quotes for the
                            # python file to take em
-                           main_params = ",".join(map(lambda x: "\\\"" + x + "\\\"" if type(x) == str else str(x), main_params))
+                           main_params = ",".join(map(lambda x: "\"" + x + "\"" if type(x) == str else str(x), main_params))
                         
                         # Here is the gimmick we expect
                         folder, pyfile = file2output.rsplit("/", 1)
@@ -408,14 +408,14 @@ def deserialize(yaml_path="master.yaml", TESTONLY=False):
                            
                            # at a different location store the output
                            column, row = infer_location(root_col, root_row, idx)
-                           print("putting " + str(out) + " in " + str(column) + "," + str(row))
+                           # print("putting " + str(out) + " in " + str(column) + "," + str(row))
                            # inference here is kind of dumb but it's OK
                            c_out = ws.cell(column=column, row=row, value=out)
                            # check the source code at `https://openpyxl.readthedocs.io/en/stable/_modules/openpyxl/cell/cell.html#Cell`
                         else:
                            print("WHEN ERR OUTS HAD LEN " + str(len(outs)) + " and were " + str(outs))
                            print("ERR LEN WAS " + str(len(errs)))
-                           raise Exception("Failure running subprocess for " + file2output + " with error `" + str(errs) + "`")
+                           raise Exception("Failure running subprocess for " + file2output + " with error\n`" + errs.decode("utf-8") + "`")
                   ############################################################## END (Dynamic Deserialization)
             else:
                raise Exception("Top level entities MUST be sheet, but found type " + t)
@@ -440,7 +440,7 @@ def deserialize(yaml_path="master.yaml", TESTONLY=False):
 
 if __name__ == "__main__":
    # These go through master.yaml
-   serialize(filenames=None)#=["../fibs.xlsx"] + glob("../*.py"), verbose=True)
+   serialize(filenames=["../fibs.xlsx"] + glob("../*.py"))
    deserialize(TESTONLY=True)
    # pprint(d)
    # print("Serializing into test_output.yaml")
