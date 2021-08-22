@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+    <script src='https://code.jquery.com/jquery-3.1.0.min.js' onload="window.jQuery = window.$ = module.exports;"></script>
+    <script>
+      if (window.jQuery) {  
+        // jQuery is loaded  
+        $(function() {
+          $("h1").css("color", "#faa");
+        });
+      } else {
+        // jQuery is not loaded
+        console.log("jQuery not loaded");
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Hello World!</h1>
+    <!-- All of the Node.js APIs are available in this renderer process. -->
+    We are using node <script>document.write(process.versions.node)</script>,
+    Chromium <script>document.write(process.versions.chrome)</script>,
+    and Electron <script>document.write(process.versions.electron)</script>.
+  </body>
+
+  <script>
+    // You can also require other files to run in this process
+    require('./renderer.js')
+  </script>
+</html>
