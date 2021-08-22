@@ -2,8 +2,11 @@ import formulas
 import openpyxl
 import re
 import unittest
+from collections import namedtuple
 from os.path import dirname, abspath
 import os
+
+Cell = namedtuple("Cell", "value location")
 
 def create_unittest_from_file(formula, filename):
    matches = re.findall(r'[A-Z]\d',formula)
@@ -30,7 +33,7 @@ def retrieve_cell(filename: str, cell: str):
    wb = openpyxl.load_workbook(filename)
    sheet = wb.active
    value = sheet[match].value
-   return (value, cell)
+   return Cell(value, cell)
 
 def retrieve_col(filename: str, start: str, end: str):
    colname = start[0]
@@ -43,7 +46,7 @@ def retrieve_col(filename: str, start: str, end: str):
    for i in range(start_number, end_number+1):
       index = f'{colname}{i}'
       value = sheet[index].value
-      values.append((value, index))
+      values.append(Cell(value, index))
 
    return values
 
