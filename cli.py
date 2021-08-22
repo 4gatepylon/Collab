@@ -1,29 +1,42 @@
 import click
 
+import subprocess
+from subprocess import Popen, PIPE
+
 @click.group()
 def cli():
    pass
 
 @click.command()
 def pull():
-    click.echo('Hello there')
+    subprocess.call(["git", "pull"])
 
-
+# Assume they have SSH setup with their github or somehow have access to the github repository
 @click.command()
-def init():
-    click.echo('Hello there')
+@click.option("--remote", default=None, help="Git Source")
+def init(remote):
+    if remote is None:
+        subprocess.call(["git", "init"])
+    else:
+        # TODO copy into a hidden folder somewhere instead
+        subprocess.call(["git", "clone", remote])
 
 @click.command()
 def push():
-    click.echo('Hello there')
+    subprocess.call(["git", "push"])
 
 @click.command()
-def commit():
-    click.echo('Hello there')
+@click.option("--message", default="No message", help="Commit message")
+def commit(message):
+    subprocess.call(["git", "add", "."])
+    subprocess.call("git", "commit", "-m", message)
 
 @click.command()
 def diff():
-    click.echo('Hello there')
+    with Popen(["git", "diff", "--minimal", "--color"], stdout=PIPE) as p:
+        Popen(["cat"], stdin=p.stdout).wait()
+        p.stdout.close()
+
 
 
 if __name__ == '__main__':
