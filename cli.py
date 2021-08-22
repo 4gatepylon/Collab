@@ -1,6 +1,7 @@
 import click
 
 import subprocess
+from glob import glob
 from subprocess import Popen, PIPE
 
 @click.group()
@@ -31,9 +32,18 @@ def commit(message):
     subprocess.call(["git", "add", "."])
     subprocess.call(["git", "commit", "-m", message])
 
+# all files in all subdirectories as well as this directory
+def all(ext):
+    return glob("**/*." + ext) + glob("*." + ext)
+
 @click.command()
 def diff():
-    with Popen(["git", "diff", "--minimal", "--color"], stdout=PIPE) as p:
+    print(glob("*.py"))
+    with Popen(
+        ["git", "diff", "--minimal", "--color"] +
+        all("yml") + 
+        all("yaml") +
+        all("py"), stdout=PIPE) as p:
         Popen(["cat"], stdin=p.stdout).wait()
         p.stdout.close()
 
