@@ -8,6 +8,11 @@ def cli():
 def pull():
     click.echo('Hello there')
 
+
+@click.command()
+def init():
+    click.echo('Hello there')
+
 @click.command()
 def push():
     click.echo('Hello there')
@@ -26,5 +31,6 @@ if __name__ == '__main__':
    cli.add_command(push)
    cli.add_command(diff)
    cli.add_command(commit)
+   cli.add_command(init)
 
    cli()
