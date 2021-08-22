@@ -7,6 +7,17 @@ The main contribution here is the code answer injection into excel, though there
 
 This is very hacky and not particularly usable, but may prove to be a nice POC.
 
+# What Would We Like To See?
+1. Diffs of only dependencies
+2. Diffs of only functions and also functions + dependencies
+3. Diffs of only styling
+4. Diffs of only constant data
+5. Diffs of only code scripts
+6. The ability to granularly revert (etc) seperately on these dimensions (i.e. multiplexing git)
+7. Git abstracted away hidden in some folder (i.e. `~/.cache`) plus symlinks or some other way to access from your current dir
+8. Add in to Excel or (slightly less convenient) am Electron App Gui
+9. Onboarding to Git for non-technical users
+
 # Hackathon Notes
 ## TODO
 1. Get the CLI commands (particularly diff) to properly work with the hidden folder properly. Nicely encapsulate git so that we have some sort of onboarding flow where you run a script to set up your `.collab` and link to a git repository somewhere and then start editing excel spreadsheets.
