@@ -3,17 +3,13 @@ import click
 import subprocess
 from glob import glob
 from subprocess import Popen, PIPE
-from serialization import serialize
+from serialization import serialize, deserialize
 import sys
 import os
 
 @click.group()
 def cli():
    pass
-
-@click.command()
-def pull():
-    subprocess.call(["git", "pull"])
 
 # Assume they have SSH setup with their github or somehow have access to the github repository
 @click.command()
@@ -35,12 +31,23 @@ def commit(message):
     excel_filenames = all('.xlsx')
     yaml_path = os.path.basename(excel_filenames[0]) if len(excel_filenames) else 'master.yaml'
     serialize(filenames=excel_filenames, yaml_path=yaml_path)
-    subprocess.call(["git", "add", "."])
+    files_to_add = all("yml") + all("yaml") + all("py")
+    subprocess.call(["git", "add"] + files_to_add)
+    for file in files_to_add:
+        print(f"Adding {os.path.basename(file)}")
     subprocess.call(["git", "commit", "-m", message])
 
 # all files in all subdirectories as well as this directory
 def all(ext):
     return glob("**/*." + ext) + glob("*." + ext)
+
+@click.command()
+def pull():
+    subprocess.call(["git", "pull"])
+    yaml_files = all("yml") + all("yaml") 
+    for file in yaml_files:
+        basename = os.path.basename(file)
+        deserialize(yaml_path=f"{basename}.yaml")
 
 # hii
 @click.command()
