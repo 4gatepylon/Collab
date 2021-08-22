@@ -1,0 +1,11 @@
+appscript==1.1.2
+click==8.0.1
+et-xmlfile==1.1.0
+importlib-metadata==4.6.4
+openpyxl==3.0.7
+psutil==5.8.0
+PySimpleGUI==4.46.0
+PyYAML==5.4.1
+typing-extensions==3.10.0.0
+xlwings==0.24.7
+zipp==3.5.0
