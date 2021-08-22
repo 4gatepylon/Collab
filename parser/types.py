@@ -1,17 +1,19 @@
 import uuid
+import yaml
+import openpyxl
 
 # YAML Might look like:
 # Source (list of these)
 # - Type [EXCEL | PYTHON_STDOUT]
 # - Path
-# - symbol
+# - Id
 #
 #
 # Entity (list of these)
 # - Type [Excel, Cell | Plot | Func | ... ]
-# - LocStr [| None]
+# - LocStr  [| None]
 # - FuncStr [| None]
-# - ValStr [| None]
+# - ValStr  [| None]
 # - Groups
 
 # Everything in an excel spreadsheet is called an Entity. The root entity is an Excel.
@@ -25,32 +27,105 @@ import uuid
 # which are (colloquially speaking) the dependencies of the function. Note that Func includes implicit functions
 # like 1 + 2 + A1 / (A2 * A3 + A4).
 
-############################################################################ Groups
-class Group():
-    # TODO
-    pass
+############################################################################ YAML Functionality and Sources
+
+# Yaml Declarations
+__SOURCES = "Sources"
+__SOURCE = "Source"
+__TYPE = "Type"
+__PATH = "Path"
+__NAME = "Name"         # Optional
+__ENTITIES = "Entities" # Optional
+# __NAME                # Optional
+__LOC = "CellLocation"  # Optional
+__CACHE = "CachedVal"   # Optional
+__VAL = "FuncVal"       # Optional
+__GROUPS = "Groups"     # Optional
+__META = "Metadata"     # Optional
+
+# Source Type
+__PYTHON_STDOUT_FILE = "PYTHON_STDOUT_FILE"
+__EXCEL_FILE = "EXCEL_FILE"
 
 ############################################################################ High Level Entities
 class Entity():
-    pass
+    # Here are the methods to serialize and derialize from YAML
+    # They are re-implemneted in the Excel type
+    @staticmethod
+    def FromYamlMap(yaml):
+        raise NotImplementedError
+    @staticmethod
+    def ToYamlMap():
+        raise NotImplementedError
+    
+    # Here are the methods to serialize and deserialize from Excel
+    # They are re-implemented in the excel type
+    @staticmethod
+    def ToExcelFile(filepath):
+        raise NotImplementedError
+    @staticmethod
+    def FromExcelFile(filepath):
+        raise NotImplementedError
+    
+    
+    # These will be re-implemented by extensions of entity
+    # AddToWorkbook is for children of Excel
+    def AddToWorkbook(self, workbook):
+        raise NotImplementedError
+    
+    # These two functions are expected to be present in all entities
+    def Children(self):
+        raise NotImplementedError
+    def Type(self):
+        raise NotImplementedError
+    def Dependable(self):
+        return False
 
 class Excel(Entity):
-    # TODO
-    pass # contains all the entities inside an excell
+    # TODO FromYamlMap
+    # TODO ToYamlMap
+
+    @staticmethod
+    def ToExcelFile(filepath):
+        wb = openpyxl.Workbook()
+        self.AddToWorkbook(wb)
+        wb.save(filepath)
+    @staticmethod
+    def FromExcelFile(filepath):
+        # wb = openpyxl.load_all()
+        raise NotImplementedError # TODO
+        # return Excel() # TODO
+
+    def __init__(self, children):
+        self.children = children
+    def Children(self):
+        return self.children
+    def AddToWorkbook(workbook):
+        for child in self.children:
+            child.AddToWorkbook(workbook)
 
 class Sheet(Entity):
     # TODO
     pass # all the sheets in the excel
 
 # A value should be something that can be read as the input to a function
+# (i.e. it is something that is dependable)
 class Value(Entity):
     @staticmethod
     def FromStr(string):
-        # TODO detect what type of value this is
-        return Func.FromFuncStr(string)
+        if "(" in string:
+            return Func.FromFuncStr(string)
+        else:
+            return Cell.FromStr(string)
+    
+    def Dependable(self):
+        return True
     pass
 
 class Cell(Value):
+    @staticmethod
+    def FromStr(string):
+        raise NotImplementedError
     @staticmethod
     def ParseCellLoc(locStr):
         # Assume format is col, row like A1 or AB23
@@ -64,19 +139,34 @@ class Cell(Value):
         self.deps = deps if deps != None else []
         self.id = uuid.uuid4()
 
-############################################################################ Simple Entities
-
 # A static value encodes a constant like `hello` or `2`
 class StaticValue(Value):
     def __init__(self, val):
         self.val = val
 
-class Plot(Entity):
-    # TODO
-    def __init__(self):
-        raise Exception("Not implemented!")
-
 ############################################################################ Functions
+
+__ADD = "ADD"
+__SUB = "SUB"
+__MULT = "MULT"
+__DIV = "DIV"
+__ADD_DELIM = "+"
+__SUB_DELIM = "-"
+__MULT_DELIM = "*"
+__DIV_DELIM = "/"
+
+__AGG_DELIMS = set([
+    __ADD_DELIM,
+    __SUB_DELIM,
+    __MULT_DELIM,
+    __DIV_DELIM,
+])
+__AGG_DELIM_TO_CODE = {
+    __ADD_DELIM: __ADD,
+    __SUB_DELIM: __SUB,
+    __MULT_DELIM: __MULT,
+    __DIV_DELIM: __DIV,
+}
 
 # FuncInputs are a tree that encodes the inputs to a function, which may be multiple
 # and may have other entities (i.e. Funcs or Cells, etc...).
@@ -118,31 +208,9 @@ class FuncInputs():
 
     # This should return the entity dependencies (TODO)
     def Deps(self):
-        raise Exception("Not Implemented!")
+        raise NotImplementedError
 
 class Func(Value):
-    ADD_DELIMETER = "+"
-    SUB_DELIMITER = "-"
-    MULT_DELIMITER = "*"
-    DIV_DELIMITER = "/"
-    AGG_DELIMITERS = set([
-        Func.ADD_DELIMITER,
-        Func.SUB_DELIMITER,
-        Func.MULT_DELIMITER,
-        Func.DIV_DELIMITER,
-    ])
-
-    ADD = "ADD"
-    SUB = "SUB"
-    MULT = "MULT"
-    DIV = "DIV"
-    AGG_DELIMITER_TO_CODE = {
-        Func.ADD_DELIMETER: Func.ADD,
-        Func.SUB_DELIMITER: Func.SUB,
-        Func.MULT_DELIMITER: Func.MULT,
-        Func.DIV_DELIMITER: Func.DIV,
-    }
-
     @staticmethod
     def FromFuncStr(funcStr):
         funcStr = funcStr.strip()
@@ -155,7 +223,7 @@ class Func(Value):
             if funcStr[i] == ",":
                 isList = True
                 break
-            if funcStr[i] in FuncInputs.AGG_DELIMITERS:
+            if funcStr[i] in FuncInputs.__AGG_DELIMS:
                 isAgg = True
                 break
             i += 1
@@ -174,7 +242,7 @@ class Func(Value):
         # are the element before the agg delimiter and after and otherwise is the comma-seperated
         # list between the first and last `(` and `)`
         if isAgg:
-            return Func(AGG_DELIMITER_TO_CODE[funcStr[i]], Func.FromFuncStr(funcStr[i + 1:]))
+            return Func(__AGG_DELIM_TO_CODE[funcStr[i]], Func.FromFuncStr(funcStr[i + 1:]))
         else:
             return Func(funcStr[:i], FuncInputs.FromFuncInputsStr(funcStr[i + 1 : -1]))
     
@@ -182,20 +250,74 @@ class Func(Value):
         self.code = code
         self.funcInputs = funcInputs
 
-############################################################################ Dynamic Value Entities
-
 # A dynamic value encodes an output from a black box
 class DynamicValue(Value):
     # TODO
     def Val(self):
         if self.val is None:
-            raise Exception("Has no val")
+            raise NotImplementedError
         else:
             return self.val
 
-class PythonStdOut(DynamicValue):
+class PythonStdout(DynamicValue):
     # TODO
     pass
+
+############################################################################ Parsers
+
+__SRC_REQ = [
+    __PATH,
+    __TYPE,
+]
+# Entities have no requirements
+
+__GROUPS = "Groups"    # Optional
+__META = "Metadata"    # Optional
+__LOC = "CellLocation" # Optional
+__CACHE = "CachedVal"  # Optional
+__VAL = "FuncVal"      # Optional
+__NAME #is optional
+
+# Return a dictionary that returns None for items not in it
+class DefaultDict:
+    def __init__(self, mp):
+        self.mp = mp
+    def __getitem__(self, key):
+        if item in mp:
+            return mp[key]
+        else:
+            return None
+    def __setitem__(self, key, value):
+        self.mp[key] = value
+
+# Check that all the required keys are present in the given map and return a DefaultDict of it
+# Takes (Name string, Map, Required Keys)
+def DefaultRequire(s, mp, rqs):
+    for rq in rqs:
+        if not rq in mp:
+            raise Exception("Malformed Yaml %s: Did not find %s", s, rq)
+    return DefaultDict(mp)
+
+def Yaml(filepath):
+    with open(filepath) as f:
+        return yaml.load_all(f, yaml.loader.SafeLoader)
+
+class Source():
+    def __init__(self, path, _type, entities=None, name=None):
+        self.id = _id
+        self.path = path
+        self.type = _type
+        self.entities = entities
+        self.name = path if name == None else name
+    def Type(self):
+        self.type
+
+class PythonStdoutFile(Source):
+    def __init__(self, path, name=None):
+        super.__init__(path, __PYTHON_STDOUT_FILE, entities=None, name=name)
+class ExcelFile(Source):
+    def __init__(self, path, name=None):
+        super.__init(path, __EXCEL_FILE, entities=Excel.FromExcelFile(path), name=name)
 
 # TODO some testing of our object model
 if __name__ == "__main__":
