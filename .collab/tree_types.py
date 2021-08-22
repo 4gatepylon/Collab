@@ -1,6 +1,4 @@
-import uuid
-import yaml
-import openpyxl
+# THIS IS DEPRECATED DON"T USE!
 
 # YAML Might look like:
 # Source (list of these)
