@@ -1,9 +1,8 @@
 # import module
 import openpyxl
-from enum import Enum
-from entity import Cell
+# from enum import Enum
 import yaml
-
+from enum import Enum
 from openpyxl import load_workbook
 from openpyxl import Workbook
 from openpyxl.utils import FORMULAE
@@ -104,8 +103,10 @@ def serialize_excel_yaml(filename):
       yaml.dump(yaml_obj, file)
 
 if __name__ == "__main__":
+   filename = '/Users/sarboroy/Downloads/uscities.xlsx'
+   serialize_excel_yaml(filename=filename)
    # d = deserialize("ex.xlsx")
-   deserialize("output.xslx", "input.yaml")
+   # deserialize("output.xslx", "input.yaml")
    # pprint(d)
    # print("Serializing into test_output.yaml")
    # serialize_excel_yaml()
