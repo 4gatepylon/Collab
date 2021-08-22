@@ -9,6 +9,7 @@ from openpyxl.utils import FORMULAE
 
 import subprocess
 from subprocess import Popen, PIPE
+from glob import glob
 
 # Helpful for debugging
 import pprint as _pp
@@ -48,7 +49,12 @@ py_re = re.compile(".*\.py$")
 excel_re = re.compile(".*\.xlsx$")
 
 # Turn Excel into Yaml
-def serialize(filenames, yaml_path="master.yaml"):
+def serialize(filenames=None, yaml_path="master.yaml", TESTONLY=False):
+   TESTONLY_PREPEND = ""
+   if TESTONLY:
+      TESTONLY_PREPEND = "TEST_"
+   if filenames is None:
+      filenames = glob("../*.py") + glob("../*.xlsx")
    serialized = {}
    sources = []
    serialized[__SOURCES] = sources
@@ -60,7 +66,7 @@ def serialize(filenames, yaml_path="master.yaml"):
 
       entities = []
       source = {
-         __TYPE: __PYTHON_STDOUT_FILE if matches_excel else __EXCEL_FILE,
+         __TYPE: __EXCEL_FILE if matches_excel else __PYTHON_STDOUT_FILE,
          __PATH: filename,
          __ENTITIES: entities
       }
@@ -68,11 +74,18 @@ def serialize(filenames, yaml_path="master.yaml"):
          wb = load_workbook(filename=filename)
          serialize_entities(entities, wb)
       sources.append(source)
-   with open(yaml_path+ ".yaml", "w") as yf:
+   try:
+      yp, yfp = yaml_path.rsplit("/", 1)
+      yp = yp + "/"
+   except ValueError:
+      yp = ""
+      yfp = yaml_path
+   with open(yp + TESTONLY_PREPEND + yfp, "w") as yf:
       yaml.dump(serialized, yf)
 
 def serialize_entities(entities, wb):
    for sheet_name in wb.sheetnames:
+      print("Found sheet with name " + sheet_name)
       sheet = wb[sheet_name]
       deps = []
       entities.append({
@@ -126,7 +139,10 @@ def fetch_or_fail(maplike, key):
       raise Exception("Could not find " + key)
    return maplike[key]
 
-def deserialize(yaml_path):
+def deserialize(yaml_path="master.yaml", TESTONLY=False):
+   TESTONLY_PREPEND = ""
+   if TESTONLY:
+      TESTONLY_PREPEND = "TEST_"
    # Load the YAML that we want to deserialize from
    y = None
    with open(yaml_path) as f:
@@ -136,8 +152,13 @@ def deserialize(yaml_path):
    # Deserialize  from the YAML
    srcs = fetch_or_fail(y, __SOURCES)
    for y_source in srcs:
-      if excel_re.match(y_source):
+      fname = fetch_or_fail(y_source, __PATH)
+      if excel_re.match(fname):
          wb = Workbook()
+         # Quick Hack to remove trash that is automatically generated
+         for trash in wb.sheetnames:
+            wb.remove_sheet(wb[trash])
+         print("sheetnames is " + str(wb.sheetnames))
          ents = fetch_or_fail(y_source, __ENTITIES)
          # Deserialize sheets (only top level entities for now)
          for y_entity in ents:
@@ -150,7 +171,7 @@ def deserialize(yaml_path):
                   column, row = deserialize_loc(y_dep[__LOC])
                   # Deserialize cells
                   subt = fetch_or_fail(y_dep, __TYPE)
-                  if dubt == __CELL:
+                  if subt == __CELL:
                      d = y_dep[__DEPS] if __DEPS in y_dep else None
                      if not d is None and len(d) > 0:
                         raise Exception("Tracking cross-cell dependencies not yet supported")
@@ -196,8 +217,16 @@ def deserialize(yaml_path):
                   ############################################################## END (Dynamic Deserialization)
             else:
                raise Exception("Top level entities MUST be sheet, but found type " + t)
-         wb.save(filename=y_source[__PATH])
-      elif not py_re.match(y_source):
+         yp = fetch_or_fail(y_source, __PATH)
+         try:
+            yf, yfl = yp.rsplit("/", 1)
+            yf = yf + "/"
+         except ValueError:
+            yf = ""
+            yfl = yp
+         wb.save(filename=yf + TESTONLY_PREPEND + yfl)
+      # Recall, fname is the name defined above the previous if
+      elif not py_re.match(fname):
          p = y_source[__PATH] if __PATH in y_source else "UnknownPath"
          raise Exception("Trying to deserialize with unknown file type: " + p)
       # Ignore python files
@@ -234,11 +263,9 @@ def serialize_excel_yaml(filename):
       yaml.dump(yaml_obj, file)
 
 if __name__ == "__main__":
-   # n = letters2number("AAB")
-   # print(n)
-   # print(number2letters(n))
-   d = serialize_excel_yaml(filenames=["../whyme.xlsx", "../ex.xlsx"])
-   # deserialize("../sample.xlsx", "sample.yaml")
+   # These go through master.yaml
+   d = serialize()
+   deserialize(TESTONLY=True)
    # pprint(d)
    # print("Serializing into test_output.yaml")
    # serialize_excel_yaml()
