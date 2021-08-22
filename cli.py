@@ -26,10 +26,10 @@ def push():
     subprocess.call(["git", "push"])
 
 @click.command()
-@click.option("--message", default="No message", help="Commit message")
+@click.option("--message", default="Commit", help="Commit message")
 def commit(message):
     subprocess.call(["git", "add", "."])
-    subprocess.call("git", "commit", "-m", message)
+    subprocess.call(["git", "commit", "-m", message])
 
 @click.command()
 def diff():
