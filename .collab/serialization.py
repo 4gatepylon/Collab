@@ -88,7 +88,6 @@ def get_call_name(filepath):
          return None
       return c
 
-#### TODO #### !!! SOMETHING IS NOT WORKING FOR NATIONS
 # Turn Excel into Yaml
 def serialize(filenames=None, yaml_path="master.yaml", TESTONLY=False, verbose=False):
    cn2f = {}
@@ -441,7 +440,7 @@ def deserialize(yaml_path="master.yaml", TESTONLY=False):
 
 if __name__ == "__main__":
    # These go through master.yaml
-   serialize(filenames=["../fibs.xlsx"] + glob("../*.py"), verbose=True)
+   serialize(filenames=None)#=["../fibs.xlsx"] + glob("../*.py"), verbose=True)
    deserialize(TESTONLY=True)
    # pprint(d)
    # print("Serializing into test_output.yaml")
