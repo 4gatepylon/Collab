@@ -5,6 +5,9 @@
 *.xlsx
 **.xlsx
 
+TEST_*
+**/TEST_*
+
 # Test folder I'm using to try and reverse-engineer XLSX
 test/
 
