@@ -40,8 +40,9 @@ def serialize_excel_yaml(filename):
       yaml.dump(yaml_obj, file)
 
 def main():
-   filename = '/Users/sarboroy/Downloads/uscities.xlsx'
-   serialize_excel_yaml(filename)
+   pass
+   # filename = '/Users/sarboroy/Downloads/uscities.xlsx'
+   # serialize_excel_yaml(filename)
 
 if __name__ == "__main__":
    main()
