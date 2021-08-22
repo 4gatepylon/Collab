@@ -3,6 +3,7 @@ import click
 import subprocess
 from glob import glob
 from subprocess import Popen, PIPE
+from serialization import serialize
 import sys
 
 @click.group()
@@ -30,6 +31,8 @@ def push():
 @click.command()
 @click.option("--message", default="Commit", help="Commit message")
 def commit(message):
+    excel_filenames = all('.xlsx')
+    serialize(filenames=excel_filenames)
     subprocess.call(["git", "add", "."])
     subprocess.call(["git", "commit", "-m", message])
 
