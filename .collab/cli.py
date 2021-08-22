@@ -3,6 +3,7 @@ import click
 import subprocess
 from glob import glob
 from subprocess import Popen, PIPE
+import sys
 
 @click.group()
 def cli():
@@ -46,6 +47,10 @@ def diff():
         all("py"), stdout=PIPE) as p:
         Popen(["cat"], stdin=p.stdout).wait()
         p.stdout.close()
+
+@click.command()
+def exitProgram():
+    sys.exit()
 
 
 
