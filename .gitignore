@@ -1,3 +1,10 @@
+# Ignore Excel files
+*.xlsx
+**.xlsx
+
+# Test folder I'm using to try and reverse-engineer XLSX
+test/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

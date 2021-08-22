@@ -41,5 +41,28 @@ Current MVP is:
 4. Do a dag computation; for each node, if it is dynamic, compute linked python output and store it, replacing the errors and writing to the file; if it is static data then just write to the file; if it's a function then write the function to the file
 5. Return the temporary file or error out
 
-# Datatypes
-...
+# YAML Structure
+- List of Python files
+- List of xslx files
+- Links (i.e. declare a symbol for the output) between the python and xslx files (in YAML)
+- For each xslx generate a sub-DAG with the symbols as nodes
+
+# CLI Options
+## Global
+- Config (set any credentials you need to be able to do git operations)
+## Repository
+- Init (create a repository and optionally pull from a source)
+- Stage (stage `*.py` files and changes to `*.xslx` files) (take in a regex to ignore certain files, or choose certain files)
+- Commit (commits everything staged)
+- Merge (combine two branches, error if you cannot: under the hood we'll rebase)
+- Branch (create a new branch starting at the current commit)
+- Push (try to push to origin, if it is ahead reject, if it's behind, rebase or fail)
+- Pull (try to pull from origin and fast-forward and rebase, or fail)
+- Reset (wind back time)
+- Log (list of changes)
+- Diff (show a meaningful diff)
+## Linking
+There is no linking command, they just need to add xlwings decorators. When we init, we will generate the boilerplate main in a hidden folder and then import in their files. Instead of them giving a location, they need to use the function.
+
+# Help
+To analyze an Exel file try running `unzip myfile.xslx`.
