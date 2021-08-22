@@ -5,6 +5,7 @@ from glob import glob
 from subprocess import Popen, PIPE
 from serialization import serialize
 import sys
+import os
 
 @click.group()
 def cli():
@@ -32,7 +33,8 @@ def push():
 @click.option("--message", default="Commit", help="Commit message")
 def commit(message):
     excel_filenames = all('.xlsx')
-    serialize(filenames=excel_filenames)
+    yaml_path = os.path.basename(excel_filenames[0]) if len(excel_filenames) else 'master.yaml'
+    serialize(filenames=excel_filenames, yaml_path=yaml_path)
     subprocess.call(["git", "add", "."])
     subprocess.call(["git", "commit", "-m", message])
 
