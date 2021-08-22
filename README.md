@@ -1,3 +1,7 @@
+# TODO
+1. Get the CLI commands (particularly diff) to properly work with the hidden folder
+2. Ignore the hidden files with `https://stackoverflow.com/questions/10415100/want-to-exclude-file-from-git-diff`
+
 # Collab
 Excel + Git + Jupyter Notebook with Smart Diffing
 

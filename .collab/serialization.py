@@ -1,6 +1,6 @@
 # import module
 import openpyxl
-# from enum import Enum
+from enum import Enum
 import yaml
 from enum import Enum
 from openpyxl import load_workbook
@@ -63,8 +63,50 @@ __EXCEL_FILE = "EXCEL_FILE"
 #                 })
 #     return yaml
 
+num_letters = ord("Z") - ord("A") + 1
+
+def letter2number(letter):
+   if ord(letter) < ord("A") or ord(letter) > ord("Z"):
+      raise Exception("Must be uppercase letter!")
+   # A => 1, B => 2, ...
+   return ord(letter) - ord("A") + 1
+
+# TODO this might be buggy
+def col_letter2col(col_letter):
+   if len(col_letter) > 1:
+      raise NotImplementedError
+   acc = 0
+   for let in col_letter:
+      acc *= num_letters
+      acc += letter2number(let)
+   return acc
+
+def deserialize_loc(loc):
+   i = 0
+   while i < len(loc) and not loc[i].isdigit():
+      i += 1
+   return col_letter2col(loc[:i]), int(loc[i:])
+
 def deserialize(excel_path, yaml_path):
-   pass
+   wb = Workbook()
+   y = None
+   with open(yaml_path) as f:
+      # load_all will give you a stream please ignore it
+      y = yaml.load(f, yaml.loader.SafeLoader)
+   ws = wb.create_sheet(title="sheet")
+   # print(y)
+   for e in y["Source"]["Entities"]:
+      entity = e["Entity"]
+      loc = entity["location"]
+      t = entity["type"]
+      val = entity["value"]
+      if t == "cell":
+         col, row = deserialize_loc(loc)
+         _ = ws.cell(column=col, row=row, value=val)
+      else:
+         raise NotImplementedError
+      # pprint(entity)
+   wb.save(filename=excel_path)
 
 ########################################################### Serialization
 class EntityType(Enum):
@@ -73,11 +115,11 @@ class EntityType(Enum):
    FUNCTION = 3
    PLOT = 4
 
-def map_number_to_letter(number) -> str:
-   '''
-   1 -> A
-   '''
-   return chr(ord('@')+number)
+# TODO support
+def number2letters(number) -> str:
+   if number > num_letters:
+      raise NotImplementedError
+   return chr(ord('A') - 1 + number)
 
 def serialize_excel_yaml(filename):
 # load excel with its path
@@ -93,7 +135,7 @@ def serialize_excel_yaml(filename):
    # iterate through excel and display data
    for row in range(1, sheet.max_row+1):         
       for col in range(1, sheet.max_column+1):
-         col_letter = map_number_to_letter(col)
+         col_letter = number2letters(col)
          cell_obj = sheet.cell(row=row, column=col)
          entity = {'Entity': {'type': 'cell', 'value': cell_obj.value, 'location': f'{col_letter}{row}'}}
          entities.append(entity)
@@ -103,10 +145,8 @@ def serialize_excel_yaml(filename):
       yaml.dump(yaml_obj, file)
 
 if __name__ == "__main__":
-   filename = '/Users/sarboroy/Downloads/uscities.xlsx'
-   serialize_excel_yaml(filename=filename)
-   # d = deserialize("ex.xlsx")
-   # deserialize("output.xslx", "input.yaml")
+   # d = deserialize("../ex.xlsx")
+   deserialize("../sample.xlsx", "sample.yaml")
    # pprint(d)
    # print("Serializing into test_output.yaml")
    # serialize_excel_yaml()

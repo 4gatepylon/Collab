@@ -1,3 +1,6 @@
+# Make sure not to ignore important hidden folders
+!.collab/
+
 # Ignore Excel files
 *.xlsx
 **.xlsx
