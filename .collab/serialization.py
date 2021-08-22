@@ -145,8 +145,8 @@ def serialize_excel_yaml(filename):
       yaml.dump(yaml_obj, file)
 
 if __name__ == "__main__":
-   # d = deserialize("ex.xlsx")
-   deserialize("sample.xlsx", "sample.yaml")
+   # d = deserialize("../ex.xlsx")
+   deserialize("../sample.xlsx", "sample.yaml")
    # pprint(d)
    # print("Serializing into test_output.yaml")
    # serialize_excel_yaml()

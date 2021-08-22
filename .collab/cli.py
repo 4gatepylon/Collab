@@ -36,9 +36,9 @@ def commit(message):
 def all(ext):
     return glob("**/*." + ext) + glob("*." + ext)
 
+# hii
 @click.command()
 def diff():
-    print(glob("*.py"))
     with Popen(
         ["git", "diff", "--minimal", "--color"] +
         all("yml") + 
